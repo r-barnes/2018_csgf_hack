@@ -1,0 +1,58 @@
+#!/bin/bash
+#Begin PBS directives for the job
+#PBS -A CSC190PORT
+#PBS -N GppMedJob
+#PBS -j oe
+#PBS -l walltime=0:30:00,nodes=1
+
+#End PBS directives and begin shell commands
+
+#What Version of the code are you running :
+VER=SEQ
+#VER=OpenMP
+#VER=MPI
+#VER=OpenACC
+#VER=ComplexClass
+
+smallInput="512 2 1600 20"
+num_mpi_ranks=1
+num_threads=1
+num_nodes=1
+
+if [ "${VER}" = "SEQ" ]; then
+    EXEC=gppKerSeq
+fi
+
+if [ "${VER}" = "OpenMP" ]; then
+    EXEC=gppOpenMP3
+    num_threads=16
+fi
+
+if [ "${VER}" = "MPI" ]; then
+    EXEC=gppMPI
+    num_mpi_ranks=8
+    num_threads=$(((${num_nodes}*16)/${num_mpi_ranks}))
+fi
+
+if [ "${VER}" = "OpenACC" ]; then
+    EXEC=gppOpenACC
+fi
+
+if [ "${VER}" = "ComplexClass" ]; then
+    EXEC=gppComplex
+    num_threads=16
+fi
+
+rm $MEMBERWORK/csc261/${EXEC}.ex
+cp /ccs/home/rgayatri/DOE-CSGF/${EXEC}.ex $MEMBERWORK/csc261
+cd $MEMBERWORK/csc261
+date
+
+export OMP_NUM_THREADS=${num_threads}
+aprun_command="aprun -n ${num_mpi_ranks} -d ${num_threads}"
+echo "The commands we run are:"
+echo "export OMP_NUM_THREADS=${num_threads}"
+echo "${aprun_command} ./${EXEC}.ex ${smallInput}"
+echo "*********************************************************************************"
+
+${aprun_command} ./${EXEC}.ex ${smallInput}
