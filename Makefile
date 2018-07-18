@@ -34,9 +34,12 @@ ifeq ($(VER), ComplexClass)
     SRC = gppComplex.cpp
 endif
 
-CXX = CC
+# CXX = CC
 LINK = ${CXX}
-CXXFLAGS=-O3 -hlist=a
+# CXXFLAGS=-O3 -hlist=a
+
+CXX=scorep-CC
+CXXFLAGS=-O3 -g
 
 ifeq ($(VER), OpenACC)
     CXXFLAGS+=-h pragma=acc
